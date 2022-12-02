@@ -1,0 +1,1 @@
+nom:String;;imei:int//note10;;233470//note11;;235440//
