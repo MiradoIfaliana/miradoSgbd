@@ -1,7 +1,7 @@
-pour excecuter le client (SOCKET_SGBD\SGBD_client) : java affichage.Affiche
-pour excecuter le server (SOCKET_SGBD\SGBD_socket): java affichage.Affiche
+pour excecuter le client (SGBD_client) : java affichage.Affiche
+pour excecuter le server (SGBD_socket): java affichage.Affiche
 
-NB: dans clients , en clic tous de suite sur le boutton "connecter" car il est encore regle en IP localhost
+NB: dans clients , on clic sur le boutton "connecter" sans saisir IP et Port car pour le moment il est regle en IP localhost
 
 REQUETE DISPONIBLE POUR LE MOMENT :
 
