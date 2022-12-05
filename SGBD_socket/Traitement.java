@@ -26,6 +26,7 @@ public class Traitement {
       public boolean isValideType(String strType){
             String type="String,int,double,Time,Date";
             String[] types=type.split(",");
+
             for(String tp:types){
                   if(tp.compareTo(strType)==0){
                         return true;
@@ -903,6 +904,7 @@ public String[] splitByRegexPoint(String o){
             for(int i=0;i<requete.length;i++){
                   if(requete[i].compareToIgnoreCase("from")==0){
                         idFrom=i;
+                        i=requete.length; //vao mahita tonga de ajanona ny boucle
                   }
             }
             //select * from ntable 1 2 3 4
@@ -921,6 +923,36 @@ public String[] splitByRegexPoint(String o){
             return rep;
             }
             return null;
+      }
+      public String[] getAllHeadersSelect(String  rqt)throws Exception{
+            String rqte=rqt.replace('(', ' ');
+            rqte=rqt.replace(',', ' ');
+            rqte=rqt.replace(')', ' ');
+            String[] lesSelects=rqte.split("--");
+            if(lesSelects.length<=1){
+                 return getHeadersSelect(rqte);
+            }
+            //separer tous les selects
+            Vector vect=new Vector();
+            for(int i=0;i<lesSelects.length;i++){
+                  String[] lesSelects2=lesSelects[i].split("%%");
+                  for(int u=0;u<lesSelects2.length;u++){
+                        vect.add(lesSelects2[u]);
+                  }
+            }
+            Vector vHeaders=new Vector();
+            for(int i=0;i<vect.size();i++){
+                  String[] lstH=getAllHeadersSelect( vect.elementAt(i).toString());
+                  for(int u=0;u<lstH.length;u++){
+                        vHeaders.add(lstH[u]);
+                  }
+            }
+            String[] headers=new String[vHeaders.size()];
+            for(int i=0;i<vHeaders.size();i++){
+                  headers[i]=vHeaders.elementAt(i).toString();
+            }
+            
+            return headers;
       }
       //public 
       public String[][] requeteTraitement(String rqt)throws Exception{
