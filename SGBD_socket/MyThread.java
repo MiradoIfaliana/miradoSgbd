@@ -34,20 +34,20 @@ public class MyThread extends Thread
             String[][] resq=traite.requeteTraitement(rqt);//resq null si c'est pas de type select
             String[] decomp=traite.decompositionSimple(rqt);
             if( decomp[0].compareToIgnoreCase("select")==0 || decomp[0].compareToIgnoreCase("(select")==0 || decomp[0].compareToIgnoreCase("show")==0 || decomp[0].compareToIgnoreCase("describe")==0 ){
-                  String [] headers=traite.getHeadersSelect(rqt);
-                    v.add(" ");
-                    v.add(headers);
-                    v.add(resq);
+                String [] headers=traite.getHeadersSelect(rqt);
+                v.add(" ");
+                v.add(headers);
+                v.add(resq);
             }else if(decomp[0].compareToIgnoreCase("use")==0){
-                  v.add("Connecte a "+decomp[1]);
+                v.add("Connecte a "+decomp[1]);
             }else if(decomp[0].compareToIgnoreCase("create")==0 && decomp[1].compareToIgnoreCase("database")==0){
-                  v.add("Database "+decomp[2]+" cree");
+                v.add("Database "+decomp[2]+" cree");
             }else if(decomp[0].compareToIgnoreCase("create")==0 && decomp[1].compareToIgnoreCase("table")==0){
-                  v.add("Table "+decomp[2]+" cree");
+                v.add("Table "+decomp[2]+" cree");
             }else if(decomp[0].compareToIgnoreCase("delete")==0 && decomp[1].compareToIgnoreCase("table")==0){
-              v.add("delete ok!");
+                v.add("delete ok!");
             }else if(decomp[0].compareToIgnoreCase("insert")==0){
-                  v.add("Insertion ok! ");
+                v.add("Insertion ok! ");
             }
           
         }catch(RQTException re){
