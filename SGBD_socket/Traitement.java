@@ -6,10 +6,11 @@ import java.sql.Time;
 import java.util.*;
 
 import javax.lang.model.element.Element;
+
 import exception.*;
 import notefile.*;
 //getHeadersSelect
-//proje
+//note.writer(nameType+";;");
 public class Traitement {
       String database;
       public Traitement(){    
@@ -479,8 +480,8 @@ public class Traitement {
             }
             if(idfrom==-1 || requete[0].compareToIgnoreCase("select")!=0 ){   throw new RQTException("Syntaxe non valide");   }//si il n'ya meme pas de "from" ou "select" dans la requete
             //verification de la connectivite du database et l'existance du table 
-            if(isDataBaseExist(database)==false){    throw new RQTException("database "+database+" n'existe pas"); }
-            if(isTableExist(database, requete[idfrom+1])==false){    throw new RQTException("table "+requete[idfrom+1]+" n'existe pas"); }
+            if(isDataBaseExist(this.getDatabase())==false){    throw new RQTException("database "+this.getDatabase()+" n'existe pas"); }
+            if(isTableExist(this.getDatabase(), requete[idfrom+1])==false){    throw new RQTException("table "+requete[idfrom+1]+" n'existe pas"); }
             //petite verification du syntaxe de la requete
             Note note=new Note("database/"+database+"/"+requete[idfrom+1]+".txt");
             String table=note.read();
@@ -920,7 +921,7 @@ public String[] splitByRegexPoint(String o){
             for(int i=0;i<attribuS.length;i++){
                   aS[i][0]=attribuS[i];
             }
-            //ampifanalana aloha  le atribue 
+            //ampifanalana aloha  le attribue
             String[][] leC=difference(aR,aS);
             String[] C=new String[leC.length];
             for(int i=0;i<leC.length;i++){
@@ -1050,6 +1051,42 @@ public String[] splitByRegexPoint(String o){
             
             return headers;
       }
+      public void deleteTable(String rqt)throws Exception{ //delete table nomTab where koko=jojo
+            String[] requete=decompositionSimple(rqt);
+            if(requete.length<3 ){
+                  throw new RQTException("Phrase du requete non valide");  
+            } 
+            if(requete[0].compareToIgnoreCase("delete")!=0 || requete[1].compareToIgnoreCase("table")!=0 ){
+                  throw new RQTException("Phrase du requete non valide");
+            }
+            String tableAndCondi="";
+            for(int i=0;i<rqt.length();i++){ //[i]="t" [i+1]="a" [i+2]="b" [i+3]="l" [i+4]="e"
+                  if(rqt.substring(i, i+5).compareToIgnoreCase("table")==0){ //on cherche ou se trouve "table"
+                      tableAndCondi=rqt.substring(i+5,rqt.length()); //de alaina le ambony (... eleve where nom=koto and ...)
+                      i=rqt.length(); //arret du boucle             
+                  }
+            }
+
+            String [][] selectForDelet = select("select * from "+tableAndCondi); //de selectionena ireo ho esorina (sady mba tonga de ao izy no mi-gere erreur)
+            String [][] selectAll=select("select * from "+requete[2]);
+            String [][] rest=difference(selectAll, selectForDelet); // de alaina ao @ izy rehetre ireo hesorina;
+            Note note=new Note("database/"+this.getDatabase()+"/"+requete[2]+".txt");
+            String nameType=note.read().split("//")[0];
+            note.deleteAll();
+            note.writer(nameType+"//");
+            if(rest!=null){
+                  for(int i=0;i<rest.length;i++){
+                        for(int u=0;u<rest[i].length;u++){
+                              note.writer(rest[i][u]);
+                              if(u+1<rest[i].length){
+                                    note.writer(";;");
+                              }
+                        }
+                        note.writer("//");
+                  }
+            }
+
+      }
       //public 
       public String[][] requeteTraitement(String rqt)throws Exception{
             String rqte=rqt.replace('(', ' ');
@@ -1067,6 +1104,8 @@ public String[] splitByRegexPoint(String o){
                   req=showTables(rqt);
             }else if(requete[0].compareToIgnoreCase("describe")==0 && requete[1].compareToIgnoreCase("table")==0){
                   req=describeTable(rqt);
+            }else if(requete[0].compareToIgnoreCase("delete")==0 && requete[1].compareToIgnoreCase("table")==0){
+                  deleteTable(rqt);
             }else if(requete[0].compareToIgnoreCase("create")==0 && requete[1].compareToIgnoreCase("table")==0){
                   createTable(rqt);
             }else if(requete[0].compareToIgnoreCase("insert")==0){

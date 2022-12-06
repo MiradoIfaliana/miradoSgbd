@@ -44,6 +44,8 @@ public class MyThread extends Thread
                   v.add("Database "+decomp[2]+" cree");
             }else if(decomp[0].compareToIgnoreCase("create")==0 && decomp[1].compareToIgnoreCase("table")==0){
                   v.add("Table "+decomp[2]+" cree");
+            }else if(decomp[0].compareToIgnoreCase("delete")==0 && decomp[1].compareToIgnoreCase("table")==0){
+              v.add("delete ok!");
             }else if(decomp[0].compareToIgnoreCase("insert")==0){
                   v.add("Insertion ok! ");
             }
