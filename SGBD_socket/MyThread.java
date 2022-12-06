@@ -33,7 +33,7 @@ public class MyThread extends Thread
         try{
             String[][] resq=traite.requeteTraitement(rqt);//resq null si c'est pas de type select
             String[] decomp=traite.decompositionSimple(rqt);
-            if( decomp[0].compareToIgnoreCase("select")==0 || decomp[0].compareToIgnoreCase("(select")==0 ){
+            if( decomp[0].compareToIgnoreCase("select")==0 || decomp[0].compareToIgnoreCase("(select")==0 || decomp[0].compareToIgnoreCase("show")==0 || decomp[0].compareToIgnoreCase("describe")==0 ){
                   String [] headers=traite.getHeadersSelect(rqt);
                     v.add(" ");
                     v.add(headers);

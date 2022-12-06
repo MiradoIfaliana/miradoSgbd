@@ -9,6 +9,7 @@ import javax.lang.model.element.Element;
 import exception.*;
 import notefile.*;
 //getHeadersSelect
+//proje
 public class Traitement {
       String database;
       public Traitement(){    
@@ -142,6 +143,25 @@ public class Traitement {
             }
             return false;
       }
+//---------------------------------------------------------------------------------------Show database
+      public String[][] showDatabases(String rqt)throws Exception{ //show databases
+            String[] requete=decompoANDverifChar(rqt);
+            if(requete.length!=2 ){
+                  throw new RQTException("Phrase du requete non valide");  
+            } 
+            if(requete[0].compareToIgnoreCase("show")!=0 || requete[1].compareToIgnoreCase("databases")!=0 ){
+                  throw new RQTException("Phrase du requete non valide");
+            }
+            File folder=new File("database/");
+            File[] datas=folder.listFiles();
+            if(datas==null){ return null;}
+            else if(datas.length<1){   return null;  }
+            String[][] lesDBases=new String[datas.length][1];
+            for(int i=0;i<datas.length;i++){
+                  lesDBases[i][0]=datas[i].getName();
+            }
+            return lesDBases;
+      }
 //---------------------------------------------------------------------------------------CREATE DATABASE
       public void createDatabase(String rqt)throws Exception{
                  //decomposition du phrase de la requete
@@ -181,6 +201,40 @@ public class Traitement {
                   throw new RQTException("database \""+requete[1]+"\""+" n'existe pas");
             }
       }
+//---------------------------------------------------------------------------------------show tables 
+      public String[][] showTables(String rqt)throws Exception{ //show databases
+            String[] requete=decompoANDverifChar(rqt);
+            if(requete.length!=2 ){
+                  throw new RQTException("Phrase du requete non valide");  
+            } 
+            if(requete[0].compareToIgnoreCase("show")!=0 || requete[1].compareToIgnoreCase("tables")!=0 ){
+                  throw new RQTException("Phrase du requete non valide");
+            }
+            if(this.getDatabase()==null){ throw new RQTException("non connecter a une database"); }
+            File folder=new File("database/"+this.getDatabase());
+            if(folder.exists()==false){
+                  throw new RQTException("database "+this.getDatabase()+" n'existe pas");
+            }
+            File [] tables=folder.listFiles();
+            if(tables==null){ return null;}
+            else if(tables.length<1){   return null;  }
+
+            Vector vTables=new Vector();
+            for(int i=0;i<tables.length;i++){
+                  if(tables[i].length()>=5){
+                        ///nom.txt
+                        if(tables[i].getName().substring(tables[i].getName().length()-4 , tables[i].getName().length()).compareToIgnoreCase(".txt")==0){
+                              vTables.add( tables[i].getName().substring(0, tables[i].getName().length()-4) );
+                        }
+                  }
+            }
+            if(vTables.size()<1){ return null; }
+            String[][] lesTables=new String[vTables.size()][1];
+            for(int i=0;i<vTables.size();i++){
+                  lesTables[i][0]=(String)vTables.elementAt(i);
+            }
+            return lesTables;
+}
 //---------------------------------------------------------------------------------------CREATE TABLE
       public void createTable(String rqt)throws Exception{
       //decomposition du phrase de la requete
@@ -229,7 +283,32 @@ public class Traitement {
                   throw new RQTException("aucun database utilisé");
             }
       }
-//---------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------------Describe table
+      public String[][] describeTable(String rqt)throws Exception{
+            String[] requete=decompoANDverifChar(rqt);
+            if(requete.length!=3 ){
+                  throw new RQTException("Phrase du requete non valide");  
+            } 
+            if(requete[0].compareToIgnoreCase("describe")!=0 || requete[1].compareToIgnoreCase("table")!=0){
+                  throw new RQTException("Phrase du requete non valide");
+            }
+            if(this.getDatabase()==null){ throw new RQTException("non connecter a une database"); }
+            if(isDataBaseExist(this.database)==false){
+                  throw new RQTException("database "+this.getDatabase()+" n'existe pas");
+            }
+            if(isTableExist(this.getDatabase(), requete[2])==false){
+                  throw new RQTException("table "+ requete[2]+" n'existe pas dans "+this.database);
+            }
+            Note table=new Note("database/"+this.database+"/"+requete[2]+".txt");
+            String[][] namTyp=getNameColumn_TypeColumn(table.read().split("//")[0]);
+            String[][] reponse=new String[namTyp[0].length][2];
+            for(int i=0;i<namTyp[0].length;i++){
+                  reponse[i][0]=namTyp[0][i];
+                  reponse[i][1]=namTyp[1][i];
+            }
+            return reponse;
+      }
+
 //-------------------------------------------------------------------------------------------------------------INSERTION
       public void insert(String rqt)throws Exception{
             //insert into nomTab (col1,col2,col2...) values(val1,val2,val3...);
@@ -417,12 +496,16 @@ public class Traitement {
                         if(isvalideNameColumn(requete[i],nameType[0])==false){   throw new RQTException("nom de colonne \""+requete[i]+"\" non valide");   }
                   }
             }
-            //maitenant verifiant si la requete a une condition
+           //----
             String[] data=table.split("//");
+            if(data.length<=1){ //raha mbola ts nisy donnee mihintsy
+                  return null;
+            }
             String[][] values=new String[data.length-1][1];
             for(int i=1;i<data.length;i++){
-                  values[i-1]=data[i].split(";;");
+                  values[i-1]=data[i].split(";;"); 
             }
+             //maitenant verifiant si la requete a une condition
             if(requete.length == idfrom+2){//c-a-d pas de where
                   String[][] rep=projection(nameType[0],values,colSelct);
                   return rep;
@@ -837,6 +920,7 @@ public String[] splitByRegexPoint(String o){
             for(int i=0;i<attribuS.length;i++){
                   aS[i][0]=attribuS[i];
             }
+            //ampifanalana aloha  le atribue 
             String[][] leC=difference(aR,aS);
             String[] C=new String[leC.length];
             for(int i=0;i<leC.length;i++){
@@ -865,12 +949,12 @@ public String[] splitByRegexPoint(String o){
             String[] lesSelect=new String[selections.length];
             for(int i=0;i<selections.length;i++){
                   String select=selections[i].replaceAll(" ","");
-                  //[0]="(" [1]="s" [2]="e" [3]="l" [4]="" [5]="e" [6]="c" [7]="t".....[select.length-1]=")"----> verifier ce syntaxe
-                  if(select.substring(0, 8).compareToIgnoreCase("(select")!=0 || select.substring(select.length()-1, select.length()).compareToIgnoreCase(")")!=0){
+                  //[0]="(" [1]="s" [2]="e" [3]="l" [4]="e" [5]="c" [6]="t" [7]="".....[select.length-1]=")"----> verifier ce syntaxe
+                  if(select.substring(0, 7).compareToIgnoreCase("(select")!=0 || select.substring(select.length()-1, select.length()).compareToIgnoreCase(")")!=0){
                         throw new RQTException("syntaxe pour operation Division non valide");
                   }
-                  lesSelect[i]=selections[i].replaceAll("(","");
-                  lesSelect[i]=lesSelect[i].replaceAll(")","");
+                  lesSelect[i]=selections[i].replace('(',' ');
+                  lesSelect[i]=lesSelect[i].replace(')',' ');
             }
             //ampidirina anaty vector le resultat aveo
             String[][] division=select(lesSelect[0]);
@@ -900,6 +984,18 @@ public String[] splitByRegexPoint(String o){
             rqte=rqt.replace(',', ' ');
             rqte=rqt.replace(')', ' ');
             String[] requete = decompositionSimple(rqte);
+            if(requete[0].compareToIgnoreCase("show")==0 && requete[1].compareToIgnoreCase("databases")==0){
+                  String[] header=new String[1];
+                  header[0]="databases";
+                  return header;
+            }else if(requete[0].compareToIgnoreCase("show")==0 && requete[1].compareToIgnoreCase("tables")==0){
+                  String[] header=new String[1];
+                  header[0]="Tables of "+this.getDatabase();
+                  return header;
+            }else if(requete[0].compareToIgnoreCase("describe")==0 && requete[1].compareToIgnoreCase("table")==0){
+                  String[] header={"column","type"};
+                  return header;
+            }
             int idFrom=-1;
             for(int i=0;i<requete.length;i++){
                   if(requete[i].compareToIgnoreCase("from")==0){
@@ -961,10 +1057,16 @@ public String[] splitByRegexPoint(String o){
             rqte=rqt.replace(')', ' ');
             String[] requete = decompositionSimple(rqte);
             String[][] req=null;
-            if(requete[0].compareToIgnoreCase("use")==0){
+            if(requete[0].compareToIgnoreCase("show")==0 && requete[1].compareToIgnoreCase("databases")==0){
+                  req=showDatabases(rqt);
+            }else if(requete[0].compareToIgnoreCase("use")==0){
                   useDatabase(rqt);
             }else if(requete[0].compareToIgnoreCase("create")==0 && requete[1].compareToIgnoreCase("database")==0){
                   createDatabase(rqt);
+            }else if(requete[0].compareToIgnoreCase("show")==0 && requete[1].compareToIgnoreCase("tables")==0){
+                  req=showTables(rqt);
+            }else if(requete[0].compareToIgnoreCase("describe")==0 && requete[1].compareToIgnoreCase("table")==0){
+                  req=describeTable(rqt);
             }else if(requete[0].compareToIgnoreCase("create")==0 && requete[1].compareToIgnoreCase("table")==0){
                   createTable(rqt);
             }else if(requete[0].compareToIgnoreCase("insert")==0){
@@ -973,6 +1075,7 @@ public String[] splitByRegexPoint(String o){
                   req=join(rqt);
             }else if(rqt.contains(" %% ")==true){
                   req=diviser(rqt);
+                  affiche(req);
             }else if(rqt.contains("--")){
                   req=differencier(rqt);
             }else if(requete[0].compareToIgnoreCase("select")==0){

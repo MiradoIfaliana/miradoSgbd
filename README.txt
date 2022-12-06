@@ -4,7 +4,12 @@ pour excecuter le server (SGBD_socket): java affichage.Affiche
 NB: dans clients , on clic sur le boutton "connecter" sans saisir IP et Port car pour le moment il est regle en IP localhost
 
 REQUETE DISPONIBLE POUR LE MOMENT :
-
+-voir les databases :
+	show databases
+-voir les tables d'une database(bien sur apres connection a une base):
+	show tables
+-descrire une table(bien sur apres connection a une base) : 
+	describe table nomTable
 -connection a la database : 
 	use nomDataBase
 -creation database:  
@@ -17,6 +22,10 @@ REQUETE DISPONIBLE POUR LE MOMENT :
 	select * from nomTable 
 	select * from nomTable where condition1 and/or condition2 ...
  exemple condition : nom=mirado and/or numero=21 ... 
+-difference:
+	(requete1 de selection) -- (requete2 de selection) -- ...
+	exemple : (select nom,numero from eleve where numero>9) -- (select name, from eleve where nom!=kevin) --...
+	
 
 
 exemple de Database existant :
