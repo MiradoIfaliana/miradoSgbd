@@ -385,9 +385,9 @@ public class Traitement {
 //------------------------------------------------------------------------------------------------projection
       public String[][] projection(String[] headValues,String[][] values,String[] namesShow )throws Exception{
             //[i][0]=val0 [i][1]=val1 [i][2]=val2 [i][3]=val3 ....
-            if(existIdentiqueIgnoreCase(namesShow)==true){
-                  throw new RQTException("repetition de nom de colonne a afficher");
-            }
+            // if(existIdentiqueIgnoreCase(namesShow)==true){
+            //       throw new RQTException("repetition de nom de colonne a afficher");
+            // }
             for(int i=0;i<namesShow.length;i++){
                   if(isvalideNameColumn(namesShow[i], headValues)==false){
                         throw new RQTException("colonne "+namesShow[i]+" non valide");
@@ -787,25 +787,35 @@ public String[][] produitCartesien(String[][] R, String[][] S){
       public String[][] jointure(String[] Rattribu,String[] Sattribu,String RnameAttribuForJoin,String SnameAttribuForJoin,String[][] R, String[][] S)throws Exception{
             //exemple-----0----1-------2----------------0-----1------2-------3---
             //exempleR : nom,prenom,classe    et    S: nom , age , numero, classe 
+            //System.out.println(RnameAttribuForJoin);
+            //System.out.println(SnameAttribuForJoin);
+            System.out.println("m-----------------------------omo");
             String[][] prdCart=produitCartesien(R,S);
+            affiche(prdCart); 
             int idR=-1; int idS=-1;
             for(int i=0;i<Rattribu.length;i++){
-                  if(Rattribu[i].compareToIgnoreCase(RnameAttribuForJoin)==0){      idR=i; }
+                  System.out.println("-o-o-o-o-o"+Rattribu[i]+" comparer a "+RnameAttribuForJoin);
+                  if(Rattribu[i].compareToIgnoreCase(RnameAttribuForJoin)==0){  System.out.println(i);     idR=i; } //chercher la place de l'attribu a joigner dans le data
             }
             for(int i=0;i<Sattribu.length;i++){
-                  if(Sattribu[i].compareToIgnoreCase(SnameAttribuForJoin)==0){      idS=i; }
+                  System.out.println("O)O)O)O)O)"+Sattribu[i]+" comparer a "+SnameAttribuForJoin);
+                  if(Sattribu[i].compareToIgnoreCase(SnameAttribuForJoin)==0){   System.out.println(i);  idS=i; } //chercher la place de l'attribu a joigner dans le data
             }
             if(idR==-1){ throw new RQTException("colonne=\""+RnameAttribuForJoin+"\" inconnu"); }
             if(idS==-1){ throw new RQTException("colonne=\""+SnameAttribuForJoin+"\" inconnu"); }
             //idR-----idR+idS+1 = les indice des deux cote pour la jointure
+            System.out.println("m-----------------------------omo2");
             Vector vJoin=new Vector();
             for(int i=0;i<prdCart.length;i++){
-                  if(prdCart[i][idR].compareToIgnoreCase(prdCart[i][idR+idS+1])==0){     
+                  System.out.println("-o-o-o-o-o"+prdCart[i][idR]+" comparer a "+prdCart[i][Rattribu.length+idS]);
+                  if(prdCart[i][idR].compareToIgnoreCase(prdCart[i][Rattribu.length+idS])==0){      //ka izay mitovy attribu ihany no alaina
+                        System.out.println("m-----------------------------omo99");
                         String[] elimineDoublant=new String[prdCart[i].length-1];
                         int id=0;
-                        for(int u=0;u<prdCart[i].length;i++){
-                              if(u!=idR+idS+1){                         //iray @ le attribu ihany no tazomina
+                        for(int u=0;u<prdCart[i].length;u++){
+                              if(u!=Rattribu.length+idS){                         //iray @ le attribu ihany no tazomina (ohatra : entre nom et name, nom no tazomina)
                                     elimineDoublant[id]=prdCart[i][u];
+                                    id++;
                               }
                         }
                         vJoin.add(elimineDoublant);
@@ -816,7 +826,11 @@ public String[][] produitCartesien(String[][] R, String[][] S){
             for(int i=0;i<vJoin.size();i++){
                  join[i]=(String[])vJoin.elementAt(i);
             }
+            System.out.println("------------jointure");
+            affiche(join);
+            System.out.println("------------");
             return join;
+
       }
 //----------------------------------------------------
 public String[] splitByRegexPoint(String o){
@@ -866,20 +880,25 @@ public String[] splitByRegexPoint(String o){
                   //--------------------
             note=new Note("database/"+database+"/"+requete[idfrom+3]+".txt");
             String allAttribT2=note.read().split("//")[0];
-            String [] namesColT2=getNameColumn_TypeColumn(allAttribT1)[0];
+            String [] namesColT2=getNameColumn_TypeColumn(allAttribT2)[0];
                   //-------------------
-            for(int i=1;i<idfrom;i++){   //verification et recuperation des colonnes selectionner
-                  String [] tabANDcol=splitByRegexPoint(requete[i]);
-                  if(tabANDcol.length!=2){ throw new RQTException("syntaxe non valide, corrigez comme: \"nomTable.nomColonne\" svp"); }
-                  if(tabANDcol[0].compareToIgnoreCase(requete[idfrom+1])!=0 || tabANDcol[0].compareToIgnoreCase(requete[idfrom+3])!=0){ //si le table a selecter est en dehors des deux tables a joindre
-                        throw new RQTException("table \""+tabANDcol[0]+"\""+"est different de\""+requete[idfrom+1]+"\" et \""+requete[idfrom+3]+"\"");
-                  }
-                  if(isvalideNameColumn(tabANDcol[1], namesColT1)==true && tabANDcol[0].compareToIgnoreCase(requete[idfrom+1])==0){ //tab1
-                        vAttribTab1.add(tabANDcol[1]);
-                  }else if(isvalideNameColumn(tabANDcol[1], namesColT2)==true  && tabANDcol[0].compareToIgnoreCase(requete[idfrom+3])==0){ //tab2
-                        vAttribTab2.add(tabANDcol[1]);
-                  }else{
-                        throw new RQTException("colone \""+tabANDcol[1]+"\""+"inconnu");
+            Vector vColsT1T2=new Vector();
+            if(requete[idfrom-1].compareTo("*")!=0){
+                  for(int i=1;i<idfrom;i++){   //verification et recuperation des colonnes selectionner
+                        String [] tabANDcol=splitByRegexPoint(requete[i]);
+                        if(tabANDcol.length!=2){ throw new RQTException("syntaxe non valide, corrigez comme: \"nomTable.nomColonne\" svp"); }
+                        if(tabANDcol[0].compareToIgnoreCase(requete[idfrom+1])!=0 && tabANDcol[0].compareToIgnoreCase(requete[idfrom+3])!=0){ //si le table a selecter est en dehors des deux tables a joindre
+                              throw new RQTException("table \""+tabANDcol[0]+"\""+"est different de\""+requete[idfrom+1]+"\" et \""+requete[idfrom+3]+"\"");
+                        }
+                        if(isvalideNameColumn(tabANDcol[1], namesColT1)==true && tabANDcol[0].compareToIgnoreCase(requete[idfrom+1])==0){ //tab1
+                              vAttribTab1.add(tabANDcol[1]);
+                              vColsT1T2.add(tabANDcol[1]);
+                        }else if(isvalideNameColumn(tabANDcol[1], namesColT2)==true  && tabANDcol[0].compareToIgnoreCase(requete[idfrom+3])==0){ //tab2
+                              vAttribTab2.add(tabANDcol[1]);
+                              vColsT1T2.add(tabANDcol[1]);
+                        }else{
+                              throw new RQTException("colone \""+tabANDcol[1]+"\""+"inconnu");
+                        }
                   }
             }
             String[] namesForJoin=requete[idfrom+5].split("=");//[0]=tab1.col  [1]=tab2.col
@@ -889,27 +908,35 @@ public String[] splitByRegexPoint(String o){
             for(int i=0;i<namesForJoin.length;i++){
                   String [] tabANDcol=splitByRegexPoint(namesForJoin[i]);
                   if(tabANDcol.length!=2){ throw new RQTException("syntaxe non valide, corrigez comme: \"nomTable.nomColonne\" svp"); }
-                  if(tabANDcol[0].compareToIgnoreCase(requete[idfrom+1])!=0 || tabANDcol[0].compareToIgnoreCase(requete[idfrom+3])!=0){ //si le table a selecter est en dehors des deux tables a joindre
+                  if(tabANDcol[0].compareToIgnoreCase(requete[idfrom+1])!=0 && tabANDcol[0].compareToIgnoreCase(requete[idfrom+3])!=0){ //si le table a selecter est en dehors des deux tables a joindre
                         throw new RQTException("table \""+tabANDcol[0]+"\""+"est different de\""+requete[idfrom+1]+"\" et \""+requete[idfrom+3]+"\"");
                   }
                   if(isvalideNameColumn(tabANDcol[1], namesColT1)==true && tabANDcol[0].compareToIgnoreCase(requete[idfrom+1])==0){ //tab1
                         colForJoinT1=tabANDcol[1];
+
                   }else if(isvalideNameColumn(tabANDcol[1], namesColT2)==true  && tabANDcol[0].compareToIgnoreCase(requete[idfrom+3])==0){ //tab2
                         colForJoinT2=tabANDcol[1];
                   }else{
                         throw new RQTException("colone \""+tabANDcol[1]+"\""+"inconnu");
                   }
             }
-            String[] attribT1=new String[vAttribTab1.size()]; 
-            String[] attribT2=new String[vAttribTab2.size()];
-            for(int i=0;i<vAttribTab1.size();i++){ attribT1[i]=(String)vAttribTab1.elementAt(i); }
-            for(int i=0;i<vAttribTab2.size();i++){ attribT2[i]=(String)vAttribTab2.elementAt(i); }
-            //projection(String[] headValues,String[][] values,String[] namesShow )
-            String[][] T1=projection(namesColT1, select("select * from "+requete[idfrom+1]), attribT1);
-            String[][] T2=projection(namesColT2, select("select * from "+requete[idfrom+3]), attribT2);
-            //jointure(String[] Rattribu,String[] Sattribu,String RnameAttribuForJoin,String SnameAttribuForJoin,String[][] R, String[][] S)
-            String[][] joint=jointure(attribT1 , attribT2 , colForJoinT1, colForJoinT2, T1, T2);
-            return joint;
+
+            String[][] joint=jointure(namesColT1 , namesColT2 , colForJoinT1, colForJoinT2,  select("select * from "+requete[idfrom+1]),   select("select * from "+requete[idfrom+3]));
+            
+            
+            
+            String [] namesColT1T2=new String[namesColT1.length+namesColT2.length-1]; //anesorana 1 satria le colona iray @ le 2 ni-joignena ihany no tazomin'le join(ny an'i T1 ihany)
+            int id=0;
+            for(int i=0;i<namesColT1.length;i++){   namesColT1T2[id]=namesColT1[i]; id++; }
+            for(int i=0;i<namesColT2.length;i++){
+                  if(namesColT2[i].compareToIgnoreCase(colForJoinT2)!=0){  //le colona iray @ le 2 ni-joignena ihany no notazomin'le join(ny an'i T1 ihany),donc ts misy n'ny an'i le col an'i T2 tsony ao
+                        namesColT1T2[id]=namesColT2[i]; 
+                        id++; 
+                  }
+            }
+            
+            String[][] joinAftrPrjct=projection(namesColT1T2, joint, getHeadersSelect(rqt));
+            return joinAftrPrjct;
       }
 //-----------------------------------------------------------------------------------------------------------------Division
       public String[][] division(String[] attribuR, String[][] R, String[] attribuS, String[][] S)throws Exception{
@@ -980,6 +1007,7 @@ public String[] splitByRegexPoint(String o){
                   System.out.println("null");
             }
       }
+//-----------------------------------------------------------------------------------------------------------------
       public String[] getHeadersSelect(String rqt)throws Exception{
             String rqte=rqt.replace('(', ' ');
             rqte=rqt.replace(',', ' ');
@@ -1004,6 +1032,7 @@ public String[] splitByRegexPoint(String o){
                         i=requete.length; //vao mahita tonga de ajanona ny boucle
                   }
             }
+
             //select * from ntable 1 2 3 4
             if( idFrom>1 && requete.length>3){
                   String[] rep=new String[idFrom-1];
@@ -1011,16 +1040,46 @@ public String[] splitByRegexPoint(String o){
                         Note note=new Note("database/"+database+"/"+requete[idFrom+1]+".txt");
                         String[] data=note.read().split("//");
                         String nmtp=data[0];
-                        rep=getNameColumn_TypeColumn(nmtp)[0];
+                        rep=getNameColumn_TypeColumn(nmtp)[0]; //ao @ le indice [0] no misy an'ireo name an'le .
+                        if(rqt.toUpperCase().contains(" JOIN ")==true){
+                              //select * from tab1 join tab2 on clo1=col2
+                              //[0]   [1] [2]  [3]  [4]  [5] [6]   [7]
+                              String[] les2colForJoin=requete[7].split("=");
+                              String col1=splitByRegexPoint( les2colForJoin[0] )[1]; //tab1.col1=tab2.col2
+                              String col2=splitByRegexPoint( les2colForJoin[1] )[1]; //tab1.col1=tab2.col2
+                              System.out.println("---0-00--->"+col1);
+                              note=new Note("database/"+database+"/"+requete[idFrom+3]+".txt");
+                              String[] data2=note.read().split("//");
+                              String nmtp2=data2[0];
+                              String[] namCol2=getNameColumn_TypeColumn(nmtp2)[0];
+                              String[] repJoin=new String[rep.length+namCol2.length-1]; 
+                              int id=0;
+                              for(int i=0;i<rep.length;i++){    
+                                          repJoin[id]=rep[i]; id++;   
+                              }
+                              for(int i=0;i<namCol2.length;i++){   
+                                    if(namCol2[i].compareToIgnoreCase(col1)!=0 && namCol2[i].compareToIgnoreCase(col2)!=0){
+                                          repJoin[id]=namCol2[i]; id++; 
+                                    }  
+                              }
+                              rep=repJoin;
+                        }
                   }else{
-                        for(int i=1;i<idFrom;i++){
-                              rep[i-1]=requete[i];
+                        if(rqt.toUpperCase().contains(" JOIN ")==true){ 
+                              for(int i=1;i<idFrom;i++){
+                               rep[i-1]=splitByRegexPoint( requete[i] )[1]; 
+                              }
+                        }else{
+                              for(int i=1;i<idFrom;i++){
+                               rep[i-1]=requete[i];
+                              }
                         }
                   }
             return rep;
             }
             return null;
       }
+//-----------------------------------------------------------------------------------------------------------------
       public String[] getAllHeadersSelect(String  rqt)throws Exception{
             String rqte=rqt.replace('(', ' ');
             rqte=rqt.replace(',', ' ');
@@ -1087,39 +1146,43 @@ public String[] splitByRegexPoint(String o){
             }
 
       }
-      //public 
+      //public  toUpdate(String [] nom) 
+      //public void update(String requete){
+
+      //}
+      //public       
       public String[][] requeteTraitement(String rqt)throws Exception{
             String rqte=rqt.replace('(', ' ');
             rqte=rqt.replace(',', ' ');
             rqte=rqt.replace(')', ' ');
             String[] requete = decompositionSimple(rqte);
             String[][] req=null;
-            if(requete[0].compareToIgnoreCase("show")==0 && requete[1].compareToIgnoreCase("databases")==0){
+            if(requete[0].compareToIgnoreCase("show")==0 && requete[1].compareToIgnoreCase("databases")==0){//-------------voir les databases
                   req=showDatabases(rqt);
-            }else if(requete[0].compareToIgnoreCase("use")==0){
+            }else if(requete[0].compareToIgnoreCase("use")==0){ //--------------------------------------------------------------utiliser databases
                   useDatabase(rqt);
-            }else if(requete[0].compareToIgnoreCase("create")==0 && requete[1].compareToIgnoreCase("database")==0){
+            }else if(requete[0].compareToIgnoreCase("create")==0 && requete[1].compareToIgnoreCase("database")==0){//-------create database
                   createDatabase(rqt);
-            }else if(requete[0].compareToIgnoreCase("show")==0 && requete[1].compareToIgnoreCase("tables")==0){
+            }else if(requete[0].compareToIgnoreCase("show")==0 && requete[1].compareToIgnoreCase("tables")==0){ //----------show tables 
                   req=showTables(rqt);
-            }else if(requete[0].compareToIgnoreCase("describe")==0 && requete[1].compareToIgnoreCase("table")==0){
+            }else if(requete[0].compareToIgnoreCase("describe")==0 && requete[1].compareToIgnoreCase("table")==0){//--------describe table 
                   req=describeTable(rqt);
-            }else if(requete[0].compareToIgnoreCase("delete")==0 && requete[1].compareToIgnoreCase("table")==0){
+            }else if(requete[0].compareToIgnoreCase("delete")==0 && requete[1].compareToIgnoreCase("table")==0){//----------delete table 
                   deleteTable(rqt);
-            }else if(requete[0].compareToIgnoreCase("create")==0 && requete[1].compareToIgnoreCase("table")==0){
+            }else if(requete[0].compareToIgnoreCase("create")==0 && requete[1].compareToIgnoreCase("table")==0){//----------create table 
                   createTable(rqt);
-            }else if(requete[0].compareToIgnoreCase("insert")==0){
+            }else if(requete[0].compareToIgnoreCase("insert")==0){//-------------------------------------------------------------insert 
                   insert(rqt);
-            }else if(rqt.toUpperCase().contains(" JOIN ")==true){
+            }else if(rqt.toUpperCase().contains(" JOIN ")==true ){//---------------------------------------------------------------jointure
                   req=join(rqt);
-            }else if(rqt.contains(" %% ")==true){
+            }else if(rqt.contains(" %% ")==true){//--------------------------------------------------------------------------------division
                   req=diviser(rqt);
                   affiche(req);
-            }else if(rqt.contains("--")){
+            }else if(rqt.contains("--")==true || rqt.contains(" -- ")==true){//--------------------------------------------------difference
                   req=differencier(rqt);
-            }else if(requete[0].compareToIgnoreCase("select")==0){
+            }else if(requete[0].compareToIgnoreCase("select")==0){//-------------------------------------------------------------selection
                   req=select(rqt);
-            }else {
+            }else{
                   throw new RQTException("Syntaxe non valide");
             }
             return req;

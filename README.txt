@@ -27,6 +27,10 @@ REQUETE DISPONIBLE POUR LE MOMENT :
 	exemple : (select nom,numero from eleve where numero>9) -- (select name, from eleve where nom!=kevin) --...
 -suppression d'element d'un table:
 	delete table nomTable where condition1 and/or condition2 ...
+-equal jointure
+	select tab1.col ... tab2.col ... from tab1 join tab2 on tab1.col=tab2.col
+				ou
+	select * from tab1 join tab2 on tab1.col=tab2.col
 
 
 exemple de Database existant :
