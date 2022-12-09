@@ -23,8 +23,10 @@ public class ListenMousConnectServ implements MouseListener {
             //creer l'objet ClientSoket par le Port et Host qui a ete saisi...
             //...et essayons de se connecter :
             try{
-                  //fenetre.setClientSocket(new ClientSocket(txtfIp.getText(), Integer.valueOf(txtfPort.getText())));
-                  fenetre.setClientSocket( new ClientSocket(InetAddress.getLocalHost().getHostAddress().toString(), 9876) );
+                  System.out.println("Port : "+9876);   
+                  System.out.println("Host : "+InetAddress.getLocalHost().getHostAddress().toString()); //192.168.10.39
+                  fenetre.setClientSocket(new ClientSocket(txtfIp.getText(), Integer.valueOf(txtfPort.getText())));
+                  //fenetre.setClientSocket( new ClientSocket(InetAddress.getLocalHost().getHostAddress().toString(), 9876) );
                   ClientSocket cs=fenetre.getClientSocket();
                   //
                   //ClientSocket cs=new ClientSocket(InetAddress.getLocalHost().getHostAddress(),9876);

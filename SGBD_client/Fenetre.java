@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.sql.*;
+import java.net.InetAddress;
 
 import javax.swing.*;
 import listeners.*;
@@ -73,8 +74,10 @@ public class Fenetre extends JFrame
 
       labelPort.setBounds( this.getWidth()/2-50, 20, 100, 20);
          champPort.setBounds( this.getWidth()/3, labelPort.getY()+labelPort.getHeight()+10, this.getWidth()/3,40 ); 
+         champPort.setText("9876");//par defaut
       labelIp.setBounds(this.getWidth()/2-30, champPort.getY()+champPort.getHeight()+10, 60, 20);
          champIp.setBounds(this.getWidth()/3, labelIp.getY()+labelIp.getHeight()+10,this.getWidth()/3, 40);
+         champIp.setText(InetAddress.getLocalHost().getHostAddress().toString());//par defaut
       JButton btIpPort=new JButton("se connecter");
       btIpPort.addMouseListener(new ListenMousConnectServ(this));
       btIpPort.setBounds(this.getWidth()/2-60, champIp.getY()+champIp.getHeight()+10, 120, 30);

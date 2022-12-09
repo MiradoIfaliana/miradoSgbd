@@ -1,7 +1,7 @@
 pour excecuter le client (SGBD_client) : java affichage.Affiche
 pour excecuter le server (SGBD_socket): java affichage.Affiche
 
-NB: dans clients , on clic sur le boutton "connecter" sans saisir IP et Port car pour le moment il est regle en IP localhost
+NB: l'adress IP et le port c'est par defaut si les 2 programme sont dans le meme ordi
 
 REQUETE DISPONIBLE POUR LE MOMENT :
 -voir les databases :

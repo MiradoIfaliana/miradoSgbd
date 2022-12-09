@@ -1146,7 +1146,11 @@ public String[] splitByRegexPoint(String o){
             }
 
       }
-      //public  toUpdate(String [] nom) 
+      //
+      public void  toUpdate(String [] nomUpdate,String[] valueForUpdate,String[]allnamesColon,String[][] values){
+            
+
+      }
       //public void update(String requete){
 
       //}
