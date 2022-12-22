@@ -1,10 +1,13 @@
 package fenetre;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.net.InetAddress;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import listeners.*;
 import socket.*;
@@ -16,9 +19,16 @@ public class Fenetre extends JFrame
    JTextField champIp;
    JPanel panel;
    JLabel labmsg;
-
    ClientSocket clientSocket;
-   
+   JLabel labLoad;
+   JPanel pan;
+   JLabel lab1erSms;
+   public JPanel getPan() {
+      return pan;
+   }
+   public void setPan(JPanel pan) {
+      this.pan = pan;
+   }
    public JTextField getChamp() {
       return champ;
    }
@@ -56,6 +66,24 @@ public class Fenetre extends JFrame
    public void setClientSocket(ClientSocket clientSocket)throws IOException{
       this.clientSocket = clientSocket;
    }
+   public JLabel getLabLoad() {
+      return labLoad;
+   }
+   public void setLabLoad(JLabel labLoad) {
+      this.labLoad = labLoad;
+   }
+   public JLabel getLab1erSms() {
+      return lab1erSms;
+   }
+   public void setLab1erSms(JLabel lab1erSms) {
+      this.lab1erSms = lab1erSms;
+   }
+   public void setImageLabLoad(String path) {
+      ImageIcon myGif=new ImageIcon(this.getClass().getResource(path));
+      this.labLoad.setIcon(myGif);;
+      labLoad.setBounds(this.getWidth()/2-50, 20, myGif.getIconWidth(), myGif.getIconHeight());
+      this.setVisible(true);
+   }
    public Fenetre()throws Exception
    {  
       this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -71,8 +99,14 @@ public class Fenetre extends JFrame
       champPort=new JTextField();
       JLabel labelIp=new JLabel("Host :");
       champIp=new JTextField();
-
-      labelPort.setBounds( this.getWidth()/2-50, 20, 100, 20);
+      //-----------------------
+      //labLoad=new JLabel();
+      //setImageLabLoad("/image/blanc.png");
+      //---------------------------
+      lab1erSms=new JLabel();
+      lab1erSms.setBounds(this.getWidth()/2-50, 20, 200, 20);
+      //-------------------------
+      labelPort.setBounds( this.getWidth()/2-50, 70, 100, 20);
          champPort.setBounds( this.getWidth()/3, labelPort.getY()+labelPort.getHeight()+10, this.getWidth()/3,40 ); 
          champPort.setText("9876");//par defaut
       labelIp.setBounds(this.getWidth()/2-30, champPort.getY()+champPort.getHeight()+10, 60, 20);
@@ -82,14 +116,17 @@ public class Fenetre extends JFrame
       btIpPort.addMouseListener(new ListenMousConnectServ(this));
       btIpPort.setBounds(this.getWidth()/2-60, champIp.getY()+champIp.getHeight()+10, 120, 30);
 
-      JPanel pan=new JPanel();
+      pan=new JPanel();
       pan.setLayout(null);
+      //pan.add(labLoad);
+      pan.add(lab1erSms);
       pan.add(labelPort);
       pan.add(champPort);
       pan.add(labelIp);
       pan.add(champIp);
       pan.add(btIpPort);
       this.setContentPane(pan);
+      
    }
    public void create2eFenetre()throws Exception{
       this.setTitle("SGBD");
@@ -135,7 +172,6 @@ public class Fenetre extends JFrame
          jpan.add(tableau,BorderLayout.CENTER);
       }
    }
-
    public void ajour(){
    }
 }

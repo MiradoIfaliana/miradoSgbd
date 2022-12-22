@@ -1,0 +1,1 @@
+jnom:String;;jnum:int;;longeur:double//mark;;23;;1.70//Carl;;12;;1.80//Carl;;12;;2.00//Loid;;12;;1.92//

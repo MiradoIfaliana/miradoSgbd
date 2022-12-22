@@ -10,11 +10,14 @@ public class Affiche
 { 
    public static void main (String[] args)throws Exception
    {
-      MyThread mythread=new MyThread(new SocketServer(), new Traitement());
-      mythread.start();
+      // MyThread mythread=new MyThread(new SocketServer(), new Traitement());
+      // mythread.start();
 
-      // Traitement traite=new Traitement();
-      // traite.requeteTraitement("use mirado");
+      Traitement traite=new Traitement();
+      traite.requeteTraitement("use mirado");
+      String[][] val=traite.sousSelect("select * from eleve where nom=(select name from etudiant where name=(select name from etudiant))");
+      traite.affiche(val);
+      
       // String[][] valiny=traite.requeteTraitement("select eleve.nom from eleve join etudiant on etudiant.name=eleve.nom");
       // traite.affiche(valiny);
       // String[] header=traite.getHeadersSelect("select * from eleve join etudiant on etudiant.name=eleve.nom");

@@ -19,7 +19,8 @@ public class ListenMousConnectServ implements MouseListener {
             JTextField txtfPort=fenetre.getChampPort();
             System.out.println("Port : "+txtfPort.getText());    
             JTextField txtfIp=fenetre.getChampIp();
-            System.out.println("Host : "+txtfIp.getText());   
+            System.out.println("Host : "+txtfIp.getText()); 
+            String smsCatch=" "; 
             //creer l'objet ClientSoket par le Port et Host qui a ete saisi...
             //...et essayons de se connecter :
             try{
@@ -36,11 +37,18 @@ public class ListenMousConnectServ implements MouseListener {
                   fenetre.create2eFenetre();
                   
             }catch(ClassNotFoundException ce){
+                  smsCatch=ce.getMessage();
                   ce.printStackTrace();
             }catch(IOException io){
+                  smsCatch=io.getMessage();
                   io.printStackTrace();
             }catch(Exception ex){
+                  smsCatch=ex.getMessage();
                   ex.printStackTrace();
+            }finally{
+                  fenetre.getLab1erSms().setText("error : "+smsCatch);
+                  fenetre.getLab1erSms().setFont(Font.getFont("arial"));
+                  fenetre.setVisible(true);
             }
       }
       public void mouseReleased(MouseEvent e){}

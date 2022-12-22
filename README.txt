@@ -27,14 +27,20 @@ REQUETE DISPONIBLE POUR LE MOMENT :
 	exemple : (select nom,numero from eleve where numero>9) -- (select name, from eleve where nom!=kevin) --...
 -suppression d'element d'un table:
 	delete table nomTable where condition1 and/or condition2 ...
--equal jointure
+-equa-jointure
 	select tab1.col ... tab2.col ... from tab1 join tab2 on tab1.col=tab2.col
 				ou
 	select * from tab1 join tab2 on tab1.col=tab2.col
+-Update :
+	update table nomTab set colonne=newValeur .... where condition1...
+
+
+PATH DU STOCKAGE DES DATABASES  : SGBD_socket/database/
+	nb: (les databases sont des repertoires et dans ces repertoires se trouve les tables qui sont des fichiers.txt)
 
 
 exemple de Database existant :
 	db : mirado
 	table : -eleve (nom String , numero int, nee Date)
-		-etudiant (name String,numero int, naissance Date)
+			  -etudiant (name String,numero int, naissance Date)
 	

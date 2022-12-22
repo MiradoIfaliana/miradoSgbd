@@ -309,6 +309,40 @@ public class Traitement {
             }
             return reponse;
       }
+//-------------------------------------------------------------------------------------------------------------
+      public boolean isColumnValide(String column,String dtbase,String table)throws Exception{
+            if(isDataBaseExist(dtbase)==false){  throw new RQTException("database "+dtbase+" n'existe pas"); }
+            if(isTableExist(dtbase,table)==false){    throw new RQTException("table "+table+" n'existe pas"); }
+            Note note=new Note("database/"+dtbase+"/"+table+".txt");
+            String[] nomType=note.read().split("//")[0].split(";;");
+            String [] noms=new String[nomType.length];
+            //String [] type=new String[nomType.length];
+            for(int i=0;i<nomType.length;i++){
+                  noms[i]=nomType[i].split(":")[0];
+                  //type[i]=nomType[i].split(":")[1];
+            }
+            if(isvalideNameColumn(column, noms)==false){
+                  return false;
+            }
+            return true;
+      }
+      public boolean isValueValide(String column,String dtbase,String table,String value)throws Exception{
+            if(isColumnValide(column, dtbase,table)==false){      throw new RQTException("column "+column+" n'existe pas dans la table "+table);      }
+            Note note=new Note("database/"+dtbase+"/"+table+".txt");
+            String[] nomType=note.read().split("//")[0].split(";;");
+            String [] noms=new String[nomType.length];
+            String [] type=new String[nomType.length];
+            int idHisType=-1;
+            for(int i=0;i<nomType.length;i++){
+                  noms[i]=nomType[i].split(":")[0];
+                  if(column.equalsIgnoreCase(noms[i])==true){  idHisType=i;   } //aiza le column , mba hahafantarana ny type-ny
+                  type[i]=nomType[i].split(":")[1];
+            }
+            if(isValideValue(value,  type[ idHisType ])==false){
+                  return false;
+            }
+            return true;
+      }
 
 //-------------------------------------------------------------------------------------------------------------INSERTION
       public void insert(String rqt)throws Exception{
@@ -626,6 +660,11 @@ public class Traitement {
       }*/
       public String[][] union(String[][] data1,String[][] data2){
             Vector vrest=new Vector();
+            if(data1==null){
+                  return data2;
+            }if(data2==null){
+                  return data1;
+            }
             for(int i=0;i<data2.length;i++){
                   int nbEqual=0;
                   for(int i1=0;i1<data1.length;i1++){
@@ -1110,6 +1149,24 @@ public String[] splitByRegexPoint(String o){
             
             return headers;
       }
+      public void deleteAndRemplaceElementTableOfDataBase(String pathDBAndFile,String[][] data)throws Exception{
+            if(new File(pathDBAndFile).exists()==false){ throw new RQTException("fichier ou path "+pathDBAndFile+" introuvable"); }
+            Note note=new Note(pathDBAndFile);
+            String nameType=note.read().split("//")[0];
+            note.deleteAll();
+            note.writer(nameType+"//");
+            if(data!=null){
+                  for(int i=0;i<data.length;i++){
+                        for(int u=0;u<data[i].length;u++){
+                              note.writer(data[i][u]);
+                              if(u+1<data[i].length){
+                                    note.writer(";;");
+                              }
+                        }
+                        note.writer("//");
+                  }
+            }
+      }
       public void deleteTable(String rqt)throws Exception{ //delete table nomTab where koko=jojo
             String[] requete=decompositionSimple(rqt);
             if(requete.length<3 ){
@@ -1130,30 +1187,120 @@ public String[] splitByRegexPoint(String o){
             String [][] selectAll=select("select * from "+requete[2]);
             String [][] rest=difference(selectAll, selectForDelet); // de alaina ao @ izy rehetre ireo hesorina;
             Note note=new Note("database/"+this.getDatabase()+"/"+requete[2]+".txt");
-            String nameType=note.read().split("//")[0];
-            note.deleteAll();
-            note.writer(nameType+"//");
-            if(rest!=null){
-                  for(int i=0;i<rest.length;i++){
-                        for(int u=0;u<rest[i].length;u++){
-                              note.writer(rest[i][u]);
-                              if(u+1<rest[i].length){
-                                    note.writer(";;");
-                              }
-                        }
-                        note.writer("//");
-                  }
-            }
+            deleteAndRemplaceElementTableOfDataBase("database/"+this.getDatabase()+"/"+requete[2]+".txt",rest);
 
       }
       //
-      public void  toUpdate(String [] nomUpdate,String[] valueForUpdate,String[]allnamesColon,String[][] values){
-            
-
+      public String[]  toUpdate(String [] nomUpdate,String[] valueForUpdate,String[]allnamesColon,String[] values){
+            String[] updater=new String[values.length];
+            for(int i=0;i<values.length;i++){
+                  boolean exist=false;
+                  for(int u=0;u<nomUpdate.length;u++){
+                        if(nomUpdate[u].compareToIgnoreCase(allnamesColon[i])==0){ //cherche le position du nom a updater (si il exist)
+                        updater[i]=valueForUpdate[u];       exist=true;
+                        }
+                  }
+                  if(exist==false){       updater[i]=values[i];    }
+            }
+            return updater;
       }
-      //public void update(String requete){
 
-      //}
+      public void update(String rqt)throws Exception{ 
+            // [0]----[1]----[2]--[3]----[4]-------[5]---[6]----[7]
+            //update table nomtab set col1=val1,col2=5 where condition
+            String rqte=rqt.replace(',', ' ');
+            String[] requete=decompositionSimple(rqte);
+            if(requete.length<5){ throw new RQTException("requete update non valide");    }
+            if(requete[0].equalsIgnoreCase("update")==false || requete[1].equalsIgnoreCase("table")==false || requete[3].equalsIgnoreCase("set")==false){ throw new RQTException("requete update nom valide"); }
+            if(isDataBaseExist(this.getDatabase())==false){ throw new RQTException("database "+this.getDatabase()+" update nom valide"); }
+            if(isTableExist( this.getDatabase(), requete[2])==false ){ throw new RQTException("database "+requete[2]+" update nom valide");  }
+            //voir les colonne a updater
+            Vector vNomUpdt=new Vector();
+            Vector vValueUpdt=new Vector();
+            String [] colVal={" "," "};
+            int idWhere=-1;
+            for(int i=4;i<requete.length;i++){
+                  if(requete[i].equalsIgnoreCase("where")==false){
+                        colVal=requete[i].split("=");
+                        if(colVal.length!=2){ throw new RQTException("requete update non valide , veuillez corriger "+requete[i]+" en nomColumn=value "); }
+                        if(isColumnValide(colVal[0], this.getDatabase(), requete[2])==false){ throw new RQTException("colonne "+colVal[0]+" pour table "+requete[2]); }
+                        if(isValueValide(colVal[0], this.getDatabase(), requete[2], colVal[1])==false){ throw new RQTException("valeur "+colVal[1]+" no valide pour colone "+colVal[0]); }
+                        vNomUpdt.add(colVal[0]);
+                        vValueUpdt.add(colVal[1]);
+                  }else{
+                        idWhere=i;
+                        i=requete.length; //raha misy condition de ajanona amzay ny boucle
+                  }
+            }
+            String[] nomUpdt=new String[vNomUpdt.size()];
+            String[] valueUpdt=new String[vValueUpdt.size()];
+            for(int i=0;i<vValueUpdt.size();i++){ 
+                  nomUpdt[i]=(String)vNomUpdt.elementAt(i); 
+                  valueUpdt[i]=(String)vValueUpdt.elementAt(i);
+            }
+            String [][] allvalues=select("select * from "+requete[2]);
+            if(idWhere!=-1){ //v-dire misy condition zany
+                  String condition=" where ";
+                 if(requete.length<=idWhere+1){   throw new RQTException("condition absent apres \"where\"");   } 
+                 for(int i=idWhere+1;i<requete.length;i++){   condition=condition+requete[i]+" ";   }
+                  //toUpdate(String [] nomUpdate,String[] valueForUpdate,String[]allnamesColon,String[] values)
+                  //de boucle mitety ny select rehetra, de ze valide @ le condition no atao update.
+                  String [][] allvaluesCondition=select("select * from "+requete[2]+" "+condition);
+                  boolean existEqual=false;
+                  for(int i=0;i<allvalues.length;i++){
+                        existEqual=false;
+                        for(int u=0;u<allvaluesCondition.length;u++){
+                              if(isEqualContains(allvalues[i], allvaluesCondition[u])==true){   existEqual=true; u=allvaluesCondition.length; }
+                        }//updater le data qui convient au condition
+                        if(existEqual==true){   allvalues[i]=toUpdate(nomUpdt, valueUpdt, getHeadersSelect("select * from "+requete[2]), allvalues[i]);   }
+                  }
+            }else{
+                  for(int i=0;i<allvalues.length;i++){
+                    allvalues[i]=toUpdate(nomUpdt, valueUpdt, getHeadersSelect("select * from "+requete[2]), allvalues[i]); //tout updater si pas de where
+                  }
+            }
+            deleteAndRemplaceElementTableOfDataBase("database/"+this.getDatabase()+"/"+requete[2]+".txt",allvalues);
+      }
+      //--------------------------
+      public String[][] sousSelect(String rqt )throws Exception{
+            //select col... from tab1 where col=(select col from tab2 where col=(select col from tab3 where condition ) )
+            
+            String reqte=rqt.replace('(', ' '); 
+            reqte=reqte.replace(')', ' '); 
+            reqte=reqte.replace(',', ' '); 
+            String[] requete=decompositionSimple(reqte);
+
+            Vector vIdFrom=new Vector();
+            Vector vIdSelect=new Vector();
+            Vector vIdWhere=new Vector();
+            for(int i=0;i<requete.length;i++){
+                  if(requete[i].compareToIgnoreCase("from")==0){ vIdFrom.add(i); }
+                  if(requete[i].compareToIgnoreCase("select")==0){ vIdSelect.add(i); }
+                  if(requete[i].compareToIgnoreCase("where")==0){ vIdWhere.add(i); }
+            }
+            String rqte=rqt.replace(')', ' '); 
+            rqte=rqte.replace('(',';'); 
+            String[] lesSelects=rqte.split(";");
+            String [][] val=select(lesSelects[ lesSelects.length-1 ]);
+            String condition="";
+            int idvWhere=vIdWhere.size()-1; //le where farany
+            for(int i=2;i<=lesSelects.length;i++){
+                  if(val!=null){
+                        condition=val[0][0]+" ";
+                        for(int j=1;j<val.length;j++){
+                              //---ex:---col=val1   or   col2=val2  
+                              condition=condition+" or "+requete[ (int)vIdWhere.elementAt(idvWhere)+1 ]+val[j][0]+" ";
+                        }
+                        System.out.println("---------------"+lesSelects[ lesSelects.length-i ]+condition);
+                        val=select(lesSelects[ lesSelects.length-i ]+condition);
+                        condition="";
+                        if(idvWhere-1>=0){
+                        idvWhere=idvWhere-1;
+                        }
+                  }
+            }
+            return val;
+      }
       //public       
       public String[][] requeteTraitement(String rqt)throws Exception{
             String rqte=rqt.replace('(', ' ');
@@ -1173,6 +1320,8 @@ public String[] splitByRegexPoint(String o){
                   req=describeTable(rqt);
             }else if(requete[0].compareToIgnoreCase("delete")==0 && requete[1].compareToIgnoreCase("table")==0){//----------delete table 
                   deleteTable(rqt);
+            }else if(requete[0].compareToIgnoreCase("update")==0){//-------------------------------------------------------------update table
+                  update(rqt);
             }else if(requete[0].compareToIgnoreCase("create")==0 && requete[1].compareToIgnoreCase("table")==0){//----------create table 
                   createTable(rqt);
             }else if(requete[0].compareToIgnoreCase("insert")==0){//-------------------------------------------------------------insert 
